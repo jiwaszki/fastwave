@@ -31,14 +31,7 @@ endif()
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")  # is -O3 worth it? -O2
 
-# Find libs OpenMP and nanobind
-# TODO: make it more "portable"?
-set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include/")
-set(OpenMP_CXX_LIB_NAMES "omp")
-set(OpenMP_omp_LIBRARY "/opt/homebrew/opt/libomp/lib/libomp.dylib")
-# find_package(OPENMP REQUIRED)
-find_package(OpenMP REQUIRED)
-
+# Find libs nanobind
 # Detect the installed nanobind package and import it into CMake
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/nanobind)
 find_package(nanobind CONFIG REQUIRED)
@@ -56,7 +49,6 @@ find_package(nanobind CONFIG REQUIRED)
 # )
 # https://nanobind.readthedocs.io/en/latest/faq.html#importing-fails-due-to-missing-lib-nanobind-dylib-so-dll
 # ^ need to add -static to WA @rpath on MacOS
-# Need to decompose it as well to add OpenMP support
 nanobind_build_library(nanobind-static-abi3 STATIC)
 
 add_library(_fastwave MODULE src/_fastwave.cpp)
@@ -73,10 +65,5 @@ nanobind_compile_options(_fastwave)
 nanobind_link_options(_fastwave)
 nanobind_musl_static_libcpp(_fastwave)
 
-if(OpenMP_CXX_FOUND)
-    target_link_libraries(_fastwave PRIVATE OpenMP::OpenMP_CXX)
-endif()
-
 # Install directive for scikit-build-core
 install(TARGETS _fastwave LIBRARY DESTINATION fastwave)
-

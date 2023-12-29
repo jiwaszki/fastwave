@@ -38,7 +38,7 @@ namespace fastwave
         // Modes using C++ file access:
         DEFAULT = 0,
         // Modes using C file access:
-        OPENMP = 1,
+        THREADS = 1,
         MMAP_PRIVATE = 2,
         MMAP_SHARED = 3,
         // Last mode which is only used for info:
@@ -307,8 +307,8 @@ namespace fastwave
             // Dispatch reading of the data:
             switch (read_mode)
             {
-            case fastwave::ReadMode::OPENMP:
-                read_openmp(file_path, cache_size, num_threads);
+            case fastwave::ReadMode::THREADS:
+                read_threads(file_path, cache_size, num_threads);
                 break;
             case fastwave::ReadMode::MMAP_PRIVATE:
                 read_mmap(file_path, false);
@@ -408,31 +408,8 @@ namespace fastwave
             return;
         }
 
-        void read_openmp(const std::string &file_path, const size_t cache_size, const size_t num_threads)
+        void read_threads(const std::string &file_path, const size_t cache_size, const size_t num_threads)
         {
-            // // threads remove dependency on OpenMP!
-            // // Get size of a single chunk:
-            // size_t chunk_size = _buffer_size / num_threads;
-
-            // #pragma omp parallel num_threads(num_threads)
-            // {
-            //     size_t file = open(file_path.c_str(), O_RDONLY | O_NONBLOCK);
-
-            //     size_t thread_id = omp_get_thread_num();
-            //     size_t start_index = thread_id * chunk_size;
-            //     // int end_index = (thread_id == num_threads - 1) ? _buffer_size : start_index + chunk_size;
-
-            //     // TODO: check if any of these goes outside of file/reaches EOF
-            //     lseek(file, info.data_offset + start_index, SEEK_SET);
-
-            //     read(
-            //         file,
-            //         _buffer + start_index,
-            //         chunk_size);
-
-            //     close(file);
-            // }
-
             // Calculate the number of chunks based on chunk_size
             size_t chunk_size = cache_size << 7;
             size_t num_chunks = (_buffer_size + chunk_size - 1) / chunk_size;
@@ -520,7 +497,7 @@ NB_MODULE(_fastwave, m)
 
     nb::enum_<fastwave::ReadMode>(m, "ReadMode")
         .value("DEFAULT", fastwave::ReadMode::DEFAULT)
-        .value("OPENMP", fastwave::ReadMode::OPENMP)
+        .value("THREADS", fastwave::ReadMode::THREADS)
         .value("MMAP_PRIVATE", fastwave::ReadMode::MMAP_PRIVATE)
         .value("MMAP_SHARED", fastwave::ReadMode::MMAP_SHARED)
         .export_values();
@@ -552,9 +529,7 @@ NB_MODULE(_fastwave, m)
             // Open the file:
             std::ifstream file;
 
-            // TODO: allow to edit this size from API?
             // Adjust internal buffer of the stream:
-            // char mybuffer [131072];   // 16384, 32768(!), 65536, 131072 (!!), 262144
             char* mybuffer = reinterpret_cast<char *>(malloc(cache_size));
             file.rdbuf()->pubsetbuf(mybuffer, cache_size);
 
@@ -578,7 +553,7 @@ NB_MODULE(_fastwave, m)
                     data = fastwave::AudioData(file, info, read_mode);
                     file.close();
                     break;
-                case fastwave::ReadMode::OPENMP:
+                case fastwave::ReadMode::THREADS:
                 case fastwave::ReadMode::MMAP_PRIVATE:
                 case fastwave::ReadMode::MMAP_SHARED:
                     // Close the file before accessing it in C methods.
