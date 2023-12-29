@@ -15,7 +15,7 @@ def read(
     *, 
     cache_size: int = 131072,  # in bytes
     num_threads: int = 8,  # TODO: make it more generic
-): -> AudioData:
+) -> AudioData:
     # TODO: add one extra mode of "PYTHON"/"NATIVE"
     # This will not release the GIL but give native wrapper
     # import wave

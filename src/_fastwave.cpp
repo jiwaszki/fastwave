@@ -13,7 +13,6 @@
 #include <fcntl.h>
 
 #include <numeric>
-#include <omp.h>
 
 #include "nanobind/nanobind.h"
 #include "nanobind/ndarray.h"
@@ -414,44 +413,50 @@ namespace fastwave
             size_t chunk_size = cache_size << 7;
             size_t num_chunks = (_buffer_size + chunk_size - 1) / chunk_size;
 
+            // Calculate the number of chunks per thread
+            size_t chunks_per_thread = num_chunks / num_threads;
+            size_t remaining_chunks = num_chunks % num_threads;
+
             // Vector to store threads
             std::vector<std::thread> threads;
-            threads.reserve(num_chunks);
+            threads.reserve(num_threads);
 
-            // Function to load a chunk of data
-            auto load_chunk = [&](std::string path, size_t chunk_index) {
-                // Calculate the starting position for this thread's chunk
-                size_t start_position = chunk_index * chunk_size;
+            // Function to load a range of chunks in a thread
+            auto load_range = [&](std::string path, size_t start_chunk, size_t end_chunk) {
+                // Calculate the starting position for this thread's range
+                size_t start_position = start_chunk * chunk_size;
 
-                // Calculate the size of this thread's chunk
-                size_t this_chunk_size = std::min(chunk_size, static_cast<size_t>(_buffer_size - start_position));
+                // Calculate the size of this thread's range
+                size_t range_size = (end_chunk - start_chunk) * chunk_size;
 
+                // Allocate a local buffer for each thread
+                char* mybuffer = reinterpret_cast<char*>(malloc(cache_size));
+
+                // Open a local file stream for each thread
                 std::ifstream local_file;
-                char* mybuffer = reinterpret_cast<char *>(malloc(cache_size));
                 local_file.rdbuf()->pubsetbuf(mybuffer, cache_size);
-
                 local_file.open(path, std::ios::binary | std::ios::in);
+
                 if (!local_file.is_open()) {
-                    // Handle error opening the file
-                    throw std::runtime_error("Error opening file.");
+                    std::cerr << "Error opening file: " << path << std::endl;
                 }
 
-                // Read the data chunk from the file
                 local_file.seekg(info.data_offset + start_position);
-                local_file.read(_buffer + start_position, this_chunk_size);
+                local_file.read(_buffer + start_position, range_size);
                 free(mybuffer);
             };
 
-            // Launch threads to load data chunks in parallel
-            for (size_t i = 0; i < num_chunks; ++i) {
-                threads.emplace_back(load_chunk, file_path, i);
+            // Launch threads to load data ranges in parallel
+            for (size_t i = 0; i < num_threads; ++i) {
+                size_t start_chunk = i * chunks_per_thread;
+                size_t end_chunk = start_chunk + chunks_per_thread + ((i == num_threads - 1) ? remaining_chunks : 0);
+                threads.emplace_back(load_range, file_path, start_chunk, end_chunk);
             }
 
             // Wait for all threads to finish
             for (auto& thread : threads) {
                 thread.join();
             }
-            return;
         }
 
         inline void read_ifstream(std::ifstream &file)
