@@ -67,4 +67,10 @@ def read(
     # w.close()
     # return data (+ info? in some structure)
 
+    if cache_size < 1:
+        raise ValueError("cache_size must be than 0!")
+
+    if num_threads < 1:
+        raise ValueError("num_threads must be than 0!")
+
     return _read(file_path, mode, cache_size, num_threads)
