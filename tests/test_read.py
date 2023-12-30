@@ -28,7 +28,7 @@ def ref_read(file_path):
 def test_read_threads_fails_cache(cache_size):
     with pytest.raises(ValueError) as error:   
         audio_data = f.read(FILES[0], mode=f.ReadMode.THREADS, cache_size=cache_size)
-    assert str(error.value) in "cache_size must be than 0!"
+    assert str(error.value) in "cache_size must be more than 0!"
 
 
 @pytest.mark.parametrize(
@@ -38,7 +38,7 @@ def test_read_threads_fails_cache(cache_size):
 def test_read_threads_fails_cache(num_threads):
     with pytest.raises(ValueError) as error:   
         audio_data = f.read(FILES[0], mode=f.ReadMode.THREADS, num_threads=num_threads)
-    assert str(error.value) in "num_threads must be than 0!"
+    assert str(error.value) in "num_threads must be more than 0!"
 
 
 @pytest.mark.parametrize(
