@@ -25,7 +25,7 @@ def ref_read(file_path):
     ("file_name"),
     (FILES),
 )
-def test_read_simple(file_name):
+def test_read_default(file_name):
     ref_data = ref_read(file_name)
     audio_data = f.read(file_name, mode=f.ReadMode.DEFAULT)
     assert np.array_equal(ref_data, audio_data.data)
