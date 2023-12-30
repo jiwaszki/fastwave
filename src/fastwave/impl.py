@@ -16,6 +16,7 @@ from ._fastwave import read as _read
 # - should AudioInfo change accordingly?
 # - is it better to move optimizations to numpy?
 # - is overhead of Python a real problem here?
+@singledispatch
 def convert_data(audio: Union[AudioData, np.ndarray], *, mono: bool = False, dtype = None):
     raise NotImplemented("Unknown dispatch has been used!")
 
