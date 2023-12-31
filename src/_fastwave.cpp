@@ -382,7 +382,11 @@ namespace fastwave
         {
             if (_buffer != nullptr) {
                 if (is_mmap) {
+#if defined(__linux__) || defined(__APPLE__)
                     munmap(reinterpret_cast<void *>(_buffer), _buffer_size);
+#else
+                    throw std::runtime_error("MUNMAP is not supported on this platform!");
+#endif
                 }
                 else {
                     free(_buffer);
