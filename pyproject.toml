@@ -21,7 +21,9 @@ dependencies = [
 
 [project.optional-dependencies]
 linters = [
-    "black == 23.3.0",
+    "black",
+    "flake8",
+    "flake8-pyproject",
 ]
 tests = [
     "pytest",
@@ -31,7 +33,9 @@ tests = [
 ]
 
 [tool.pdm.scripts]
-# TODO
+# TODO:
+# python -m flake8 src/ tests/
+# python -m black src/ tests/
 
 [tool.pdm]
 # plugins = [
@@ -49,3 +53,14 @@ minimum-version = "0.4"
 build-dir = "build/{wheel_tag}"
 # Build stable ABI wheels for CPython 3.12+
 wheel.py-api = "cp312"
+
+[tool.flake8]
+# Check that this is aligned with your other tools like Black
+max-line-length = 120
+exclude = [
+    ".git",
+    "__pycache__"
+]
+extend-ignore = [
+    "F401"
+]

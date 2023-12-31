@@ -19,7 +19,7 @@ def ref_read(file_path, mono, dtype):
     if dtype is not None:
         audio = audio.astype(dtype)
         if dtype == np.float32:
-            audio = audio / 32767.
+            audio = audio / 32767.0
     if mono and audio.ndim != 1:
         # SciPy data is saved as samples-first, convert to channel-first:
         audio = audio.T
@@ -70,9 +70,7 @@ def test_convert_data_fails_dtype(failing_dtype):
 )
 @pytest.mark.parametrize(
     ("dtype"),
-    (
-        np.float32,
-    ),
+    (np.float32,),
 )
 def test_convert_data(file_name, mono, dtype):
     ref_data = ref_read(file_name, mono, dtype)

@@ -10,9 +10,12 @@ from ._fastwave import info
 from ._fastwave import read as _read
 
 
-SUPPORTED_TYPES = frozenset({
-    np.float32,
-})
+SUPPORTED_TYPES = frozenset(
+    {
+        np.float32,
+    }
+)
+
 
 # Helpers to work with data convertions
 # TODO: how to include it into "read" function and keep RO on "data"?
@@ -21,18 +24,19 @@ SUPPORTED_TYPES = frozenset({
 # - is it better to move optimizations to numpy?
 # - is overhead of Python a real problem here?
 @singledispatch
-def convert_data(audio: Union[AudioData, np.ndarray], *, mono: bool = False, dtype = None):
+def convert_data(
+    audio: Union[AudioData, np.ndarray], *, mono: bool = False, dtype=None
+):
     raise NotImplementedError("Unknown dispatch has been used!")
 
 
 @convert_data.register(AudioData)
-def _(audio: AudioData, *, mono: bool = False, dtype = None) -> np.ndarray:
+def _(audio: AudioData, *, mono: bool = False, dtype=None) -> np.ndarray:
     return convert_data(audio.data, mono=mono, dtype=dtype)
 
 
 @convert_data.register(np.ndarray)
-def _(audio: np.ndarray, *, mono: bool = False, dtype = None) -> np.ndarray:
-
+def _(audio: np.ndarray, *, mono: bool = False, dtype=None) -> np.ndarray:
     _data = audio
 
     if dtype is not None:
@@ -40,7 +44,7 @@ def _(audio: np.ndarray, *, mono: bool = False, dtype = None) -> np.ndarray:
             # astype - returns a copy
             _data = _data.astype(dtype)
             if dtype == np.float32:
-                _data = _data / 32767.
+                _data = _data / 32767.0
         else:
             raise NotImplementedError(f"Conversion for {dtype} is not supported!")
     # Currently only two channels are supported:
