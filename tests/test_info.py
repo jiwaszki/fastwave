@@ -10,6 +10,7 @@ FILES = (
     "./test_files/0.wav",
     "./test_files/1.wav",
     "./test_files/2.wav",
+    "./test_files/3.wav",
 )
 
 

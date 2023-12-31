@@ -10,6 +10,10 @@ from ._fastwave import info
 from ._fastwave import read as _read
 
 
+SUPPORTED_TYPES = frozenset({
+    np.float32,
+})
+
 # Helpers to work with data convertions
 # TODO: how to include it into "read" function and keep RO on "data"?
 # Considerations:
@@ -18,7 +22,7 @@ from ._fastwave import read as _read
 # - is overhead of Python a real problem here?
 @singledispatch
 def convert_data(audio: Union[AudioData, np.ndarray], *, mono: bool = False, dtype = None):
-    raise NotImplemented("Unknown dispatch has been used!")
+    raise NotImplementedError("Unknown dispatch has been used!")
 
 
 @convert_data.register(AudioData)
@@ -29,20 +33,22 @@ def _(audio: AudioData, *, mono: bool = False, dtype = None) -> np.ndarray:
 @convert_data.register(np.ndarray)
 def _(audio: np.ndarray, *, mono: bool = False, dtype = None) -> np.ndarray:
 
-    _data = audio.data
+    _data = audio
 
     if dtype is not None:
-        # TODO: check if dtype is correct
-        _data = _data.astype(dtype)
-        if dtype == np.float32:
-            _data = _data / 32767.
+        if dtype in SUPPORTED_TYPES:
+            # astype - returns a copy
+            _data = _data.astype(dtype)
+            if dtype == np.float32:
+                _data = _data / 32767.
         else:
-            raise NotImplemented(f"Conversion for {dtype} is not supported!")
+            raise NotImplementedError(f"Conversion for {dtype} is not supported!")
     # Currently only two channels are supported:
-    if mono and _data.shape[0] == 2:
+    if mono and _data.ndim != 1:
         # Originally samples first, change to channels first
         _data = _data.T
-        _data = (_data[0] + _data[1]) / 2
+        # mean - returns a copy
+        _data = np.mean(_data, axis=tuple(range(_data.ndim - 1)))
 
     return _data
 
@@ -58,6 +64,7 @@ def read(
     # This will not release the GIL but give native wrapper
     # Downside is that it needs some kind of heuristic first
     # to determine when this method is better.
+    # TODO: is it worth it to sacrifies GIL release?ł
     # import wave
     # import numpy as np
     # w = wave.open("./test.wav", "rb")
