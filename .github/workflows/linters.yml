@@ -7,22 +7,22 @@ on:
     branches: [ "main" ]
 
 jobs:
-  linters-ubuntu:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-  
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v3
-        with:
-          python-version: ${{ matrix.python-version }}
-  
-      - name: Install dependencies
-        run: |
+    linters-ubuntu:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: ["3.9", "3.10", "3.11"]
+    
+        steps:
+        - uses: actions/checkout@v4
+        - name: Set up PDM
+          uses: pdm-project/setup-pdm@v3
+          with:
+            python-version: ${{ matrix.python-version }}
+    
+        - name: Install dependencies
+          run: |
             pdm install --no-lock --no-self --no-default -G linters
-      - name: Run flake8
-        run: |
-          python -m flake8 src/ tests/
+        - name: Run flake8
+          run: |
+            pdm run -v flake8 src/ tests/
