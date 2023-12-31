@@ -1,18 +1,19 @@
-#include <string>
-#include <iostream>
-#include <stdexcept>
-#include <cstring> // std::memcpy
-#include <fstream>
-#include <iterator>
-#include <vector>
+#include <array>
 #include <chrono>
+#include <cstring> // std::memcpy
+#include <iterator>
+#include <iostream>
+#include <fstream>
+#include <numeric>
+#include <string>
+#include <stdexcept>
 #include <thread>
+#include <vector>
+
 #include <sys/mman.h> // include for mmap support
 // includes for open and it's flags
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#include <numeric>
 
 #include "nanobind/nanobind.h"
 #include "nanobind/ndarray.h"
