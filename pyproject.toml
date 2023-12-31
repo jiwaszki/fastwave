@@ -28,7 +28,6 @@ linters = [
 tests = [
     "pytest",
     "numpy >= 1.24.4",
-    "torchaudio >= 2.0.1",
     "scipy",
 ]
 
