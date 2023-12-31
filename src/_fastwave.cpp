@@ -1,7 +1,7 @@
 #include <string>
 #include <iostream>
 #include <stdexcept>
-
+#include <cstring> // std::memcpy
 #include <fstream>
 #include <iterator>
 #include <vector>
