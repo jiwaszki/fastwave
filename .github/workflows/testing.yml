@@ -28,7 +28,7 @@ jobs:
     
         - name: Install dependencies
           run: |
-            pdm install --no-lock -G tests
+            pdm install --no-lock -v -G tests
         - name: Test with pytest
           run: |
             cd tests/
