@@ -30,6 +30,15 @@ tests = [
     "numpy >= 1.24.4",
     "scipy",
 ]
+benchmark = [
+    "numpy >= 1.24.4",
+    "scipy",
+    "torchaudio",
+    "librosa",
+    "pydub",
+    "matplotlib",
+    "seaborn == 0.13.0",
+]
 
 [tool.pdm.scripts]
 # TODO:
