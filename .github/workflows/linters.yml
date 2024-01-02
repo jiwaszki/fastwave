@@ -25,4 +25,4 @@ jobs:
             pdm install --no-lock --no-self --no-default -G linters
         - name: Run flake8
           run: |
-            pdm run -v flake8 src/ tests/
+            pdm run -v flake8 src/ tests/ benchmark/
