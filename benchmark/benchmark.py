@@ -5,7 +5,10 @@ import random
 import string
 import functools
 import timeit
-
+# Plotting
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Reference libs
 import fastwave
 import torchaudio
 import librosa
@@ -129,7 +132,7 @@ def benchmark_librosa(audio_generator):
 
 
 if __name__ == "__main__":
-    audio_generator = AudioGenerator(sample_rate=44100, duration=60 * 10, channels=1)
+    audio_generator = AudioGenerator(sample_rate=44100, duration=60 * 30, channels=1)
     print(f"Generated file: {audio_generator.file_path}")
     print(f"Duration: {audio_generator.duration} seconds")
     print(f"Channels: {audio_generator.channels}")
@@ -143,15 +146,17 @@ if __name__ == "__main__":
         "fastwave_MMAP_PRIVATE": benchmark_fastwave_mmap_private,
         "fastwave_MMAP_SHARED": benchmark_fastwave_mmap_shared,
         "native_python": benchmark_native_python,
-        "pydub": benchmark_pydub,
+        "librosa": benchmark_librosa,
         "torchaudio": benchmark_torchaudio,
+        "pydub": benchmark_pydub,
         "scipy_default": benchmark_scipy_default,
         "scipy_mmap": benchmark_scipy_mmap,
-        "librosa": benchmark_librosa,
     }
 
     ITERATIONS = 10
     REPS = 5
+
+    execution_times = []
 
     for method_name, method_func in methods.items():
         execution_time = timeit.repeat(
@@ -159,6 +164,23 @@ if __name__ == "__main__":
             number=ITERATIONS,
             repeat=REPS,
         )
-        print(f"{method_name}: {min(execution_time)} seconds")
+        min_execution_time = min(execution_time)
+        print(f"{method_name}: {min_execution_time} seconds")
+        execution_times.append(min_execution_time)
 
     audio_generator.delete_generated_file()
+
+    # Plot the benchmark results
+    plt.figure(figsize=(10, 6))
+    palette = sns.color_palette("husl", len(list(methods.keys())))
+    bars = plt.barh(list(methods.keys()), execution_times, color=palette)
+    plt.title(f"Benchmark Results (wav, length: {audio_generator.duration} seconds, channel number: {audio_generator.channels} )")
+    plt.xlabel("Execution Time (seconds, lower is better)")
+    plt.ylabel("Library and method")
+
+    # Add legend
+    plt.legend(bars, methods, loc='upper right')
+    plt.tight_layout()
+
+    # Show the plot
+    plt.show()
