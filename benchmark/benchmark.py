@@ -5,9 +5,11 @@ import random
 import string
 import functools
 import timeit
+
 # Plotting
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 # Reference libs
 import fastwave
 import torchaudio
@@ -175,12 +177,15 @@ if __name__ == "__main__":
     plt.figure(figsize=(10, 6))
     palette = sns.color_palette("husl", len(list(methods.keys())))
     bars = plt.barh(list(methods.keys()), execution_times, color=palette)
-    plt.title(f"Benchmark Results (wav, length: {audio_generator.duration} seconds, channel number: {audio_generator.channels} )")
+    plt.title(
+        f"Benchmark Results (wav, length: {audio_generator.duration} seconds,"
+        f"channel number: {audio_generator.channels} )"
+    )
     plt.xlabel("Execution Time (seconds, lower is better)")
     plt.ylabel("Library and method")
 
     # Add legend
-    plt.legend(bars, methods, loc='upper right')
+    plt.legend(bars, methods, loc="upper right")
     plt.tight_layout()
 
     # Show the plot
