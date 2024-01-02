@@ -8,6 +8,7 @@ import timeit
 
 import fastwave
 import torchaudio
+import librosa
 from scipy.io import wavfile
 import pydub
 import wave
@@ -35,8 +36,8 @@ class AudioGenerator:
             for _ in range(self.channels)
         ]
         audio_data = np.column_stack(noises) if self.channels == 2 else noises[0]
-        scaled_audio_data = (audio_data * 32767).astype(np.int16)
-        wavfile.write(self.file_path, self.sample_rate, scaled_audio_data)
+        audio_data = (audio_data * 32767).astype(np.int16)
+        wavfile.write(self.file_path, self.sample_rate, audio_data)
 
     def delete_generated_file(self):
         if os.path.exists(self.file_path):
@@ -103,6 +104,8 @@ def benchmark_torchaudio(audio_generator):
     sig, _ = torchaudio.load(
         audio_generator.file_path, normalize=True, channels_first=False
     )
+    # Already as part of torchaudio.load under `normalize`
+    # sig = sig.astype("float32") / 32767.0
     return sig
 
 
@@ -118,9 +121,18 @@ def benchmark_scipy_mmap(audio_generator):
     return sig
 
 
+def benchmark_librosa(audio_generator):
+    sig, _ = librosa.load(audio_generator.file_path, sr=None, dtype=np.float32)
+    # Already as part of librosa.load under `dtype`
+    # sig = sig.astype("float32") / 32767.0
+    return sig.T if sig.ndim == 2 else sig
+
+
 if __name__ == "__main__":
-    audio_generator = AudioGenerator(sample_rate=44100, duration=30 * 10)
-    # print(f"Generated file: {audio_generator.file_path}")
+    audio_generator = AudioGenerator(sample_rate=44100, duration=60 * 10, channels=1)
+    print(f"Generated file: {audio_generator.file_path}")
+    print(f"Duration: {audio_generator.duration} seconds")
+    print(f"Channels: {audio_generator.channels}")
 
     ITERATIONS = 10
     REPS = 5
@@ -135,6 +147,7 @@ if __name__ == "__main__":
         "torchaudio": benchmark_torchaudio,
         "scipy_default": benchmark_scipy_default,
         "scipy_mmap": benchmark_scipy_mmap,
+        "librosa": benchmark_librosa,
     }
 
     ITERATIONS = 10
