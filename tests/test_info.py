@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-import torchaudio  # reference library
+import wave  # reference library -- native Python
 
 import fastwave as f
 
@@ -15,7 +15,16 @@ FILES = (
 
 
 def ref_read(file_path):
-    return torchaudio.info(file_path)
+    info = {}
+    with wave.open(file_path, mode="rb") as audio:
+        # Need to calculate duration by hand:
+        info["duration"] = audio.getnframes() / audio.getframerate()
+        info["num_samples"] = audio.getnframes()
+        info["num_channels"] = audio.getnchannels()
+        info["sample_rate"] = audio.getframerate()
+        # wave returns width in bytes, multiply it to get bits:
+        info["bit_depth"] = audio.getsampwidth() * 8
+    return info
 
 
 @pytest.mark.parametrize(
@@ -25,11 +34,11 @@ def ref_read(file_path):
 def test_info_direct(file_name):
     ref_info = ref_read(file_name)
     audio_info = f.info(file_name)
-    assert ref_info.num_frames / ref_info.sample_rate == audio_info.duration
-    assert ref_info.num_frames == audio_info.num_samples
-    assert ref_info.num_channels == audio_info.num_channels
-    assert ref_info.sample_rate == audio_info.sample_rate
-    assert ref_info.bits_per_sample == audio_info.bit_depth
+    assert ref_info["duration"] == audio_info.duration
+    assert ref_info["num_samples"] == audio_info.num_samples
+    assert ref_info["num_channels"] == audio_info.num_channels
+    assert ref_info["sample_rate"] == audio_info.sample_rate
+    assert ref_info["bit_depth"] == audio_info.bit_depth
 
 
 @pytest.mark.parametrize(
@@ -48,8 +57,8 @@ def test_info_direct(file_name):
 def test_info_read(file_name, mode):
     ref_info = ref_read(file_name)
     audio_info = f.read(file_name, mode=mode).info
-    assert ref_info.num_frames / ref_info.sample_rate == audio_info.duration
-    assert ref_info.num_frames == audio_info.num_samples
-    assert ref_info.num_channels == audio_info.num_channels
-    assert ref_info.sample_rate == audio_info.sample_rate
-    assert ref_info.bits_per_sample == audio_info.bit_depth
+    assert ref_info["duration"] == audio_info.duration
+    assert ref_info["num_samples"] == audio_info.num_samples
+    assert ref_info["num_channels"] == audio_info.num_channels
+    assert ref_info["sample_rate"] == audio_info.sample_rate
+    assert ref_info["bit_depth"] == audio_info.bit_depth

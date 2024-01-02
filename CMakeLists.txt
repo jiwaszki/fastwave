@@ -28,7 +28,10 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 # Compiler flags
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+# Set default compile flags for GCC
+if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+    set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+endif()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")  # is -O3 worth it? -O2
 
 # Find libs nanobind

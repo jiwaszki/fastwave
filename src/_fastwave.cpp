@@ -1,18 +1,24 @@
-#include <string>
-#include <iostream>
-#include <stdexcept>
-
-#include <fstream>
-#include <iterator>
-#include <vector>
+#include <array>
 #include <chrono>
+#include <cstring> // std::memcpy
+#include <iterator>
+#include <iostream>
+#include <fstream>
+#include <numeric>
+#include <string>
+#include <stdexcept>
 #include <thread>
+#include <vector>
+
+#if defined(__linux__) || defined(__APPLE__)
 #include <sys/mman.h> // include for mmap support
 // includes for open and it's flags
 #include <sys/stat.h>
 #include <fcntl.h>
-
-#include <numeric>
+// #elif _WIN32
+//     // windows code goes here
+// #else
+#endif
 
 #include "nanobind/nanobind.h"
 #include "nanobind/ndarray.h"
@@ -376,7 +382,11 @@ namespace fastwave
         {
             if (_buffer != nullptr) {
                 if (is_mmap) {
+#if defined(__linux__) || defined(__APPLE__)
                     munmap(reinterpret_cast<void *>(_buffer), _buffer_size);
+#else
+                    throw std::runtime_error("MUNMAP is not supported on this platform!");
+#endif
                 }
                 else {
                     free(_buffer);
@@ -387,6 +397,7 @@ namespace fastwave
 
         void read_mmap(const std::string &file_path, bool is_shared)
         {
+#if defined(__linux__) || defined(__APPLE__)
             // Allow MAP_SHARED and MAP_PRIVATE
             // https://man7.org/linux/man-pages/man2/mmap.2.html
             // Unmap the memory if it was previously mapped
@@ -405,6 +416,9 @@ namespace fastwave
             // Update mmap flag:
             is_mmap = true;
             return;
+#else
+            throw std::runtime_error("MMAP is not supported on this platform!");
+#endif
         }
 
         void read_threads(const std::string &file_path, const size_t cache_size, const size_t num_threads)
