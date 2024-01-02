@@ -68,7 +68,7 @@ def read(
     # This will not release the GIL but give native wrapper
     # Downside is that it needs some kind of heuristic first
     # to determine when this method is better.
-    # TODO: is it worth it to sacrifies GIL release?ł
+    # TODO: is it worth it to sacrifies GIL release?
     # import wave
     # import numpy as np
     # w = wave.open("./test.wav", "rb")
