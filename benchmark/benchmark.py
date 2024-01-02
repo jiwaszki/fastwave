@@ -132,6 +132,7 @@ def benchmark_librosa(audio_generator):
 
 
 if __name__ == "__main__":
+    # TODO: add benchmarks for `info` function
     audio_generator = AudioGenerator(sample_rate=44100, duration=60 * 30, channels=1)
     print(f"Generated file: {audio_generator.file_path}")
     print(f"Duration: {audio_generator.duration} seconds")
